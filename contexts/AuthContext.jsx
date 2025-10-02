@@ -5,9 +5,10 @@ import {
   signInWithEmailAndPassword,      
   signOut,                         
   onAuthStateChanged,            
-  updateProfile                  
+  updateProfile               
 } from 'firebase/auth';
 
+import { doc, setDoc } from 'firebase/firestore';
 import { auth, db } from '../firebase_config';
 
 const AuthContext = createContext();
@@ -39,10 +40,11 @@ export const AuthProvider = ({ children }) => {
         console.log(displayName)
       // Create the user account with Firebase
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-      console.log(email)
+        const user = userCredential.user;
+    
       // If a display name was provided, update the user's profile
       if (displayName) {
-        await updateProfile(userCredential.user, { displayName });
+        await updateProfile(user, { displayName });
       }
 
 
@@ -117,8 +119,7 @@ export const AuthProvider = ({ children }) => {
     login,       
     logout,       
     error,       
-    loading,
-    logout     
+    loading,     
   };
 
 
