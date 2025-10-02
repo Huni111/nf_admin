@@ -1,7 +1,12 @@
 import React, { useState } from 'react';
 import '../styles/Login.css';
+import { useAuth } from '../contexts/AuthContext';
 
 const Login = ({ onLogin }) => {
+
+
+   const { signup, login, currentUser, error, loading } = useAuth();
+
   const [userInfo, setUserInfo] = useState({
     email: "",
     password: ""
@@ -22,15 +27,22 @@ const Login = ({ onLogin }) => {
     
   };
 
-  const handleSubmit = (e) => {
+   const handleLoginSubmit = (e) => { // Separate handler for login
     e.preventDefault();
     onLogin(userInfo.email, userInfo.password);
+  };
+
+  const handleRegisterSubmit = (e) => { // Separate handler for register
+    e.preventDefault();
+    
+      signup( registerInfo.email, registerInfo.password, registerInfo.name, );
+    
   };
 
   return (
     <>
     <div className="login-root">
-      <form className="login-form" onSubmit={handleSubmit}>
+      <form className="login-form" onSubmit={handleLoginSubmit}>
         <h2>Bejelentkezes</h2>
         <label htmlFor="email" className="login-label">Email:</label>
         <input
@@ -59,14 +71,14 @@ const Login = ({ onLogin }) => {
     </div>
 
     <div className="login-root">
-      <form className="login-form" onSubmit={handleSubmit}>
+      <form className="login-form" onSubmit={handleRegisterSubmit}>
         <h2>Regisztralj</h2>
         <label htmlFor="email" className="login-label">Nev:</label>
         <input
-          type="name"
+          type="text"
           id="name"
           className="login-input"
-          value={registerInfo.email}
+          value={registerInfo.name}
           onChange={handleChange(setRegisterInfo)}
           required
         />

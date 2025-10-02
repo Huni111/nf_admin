@@ -34,10 +34,12 @@ export const AuthProvider = ({ children }) => {
      const signup = async (email, password, displayName = '') => {
     try {
       setError(null); // Clear any previous errors
-      
+        console.log(email)
+        console.log(password)
+        console.log(displayName)
       // Create the user account with Firebase
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-      
+      console.log(email)
       // If a display name was provided, update the user's profile
       if (displayName) {
         await updateProfile(userCredential.user, { displayName });

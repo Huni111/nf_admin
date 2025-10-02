@@ -7,7 +7,7 @@ import  Root  from './Root'
 import Login from './Login'
 import Orders from './Orders'
 import Products from './Products'
-
+import { AuthProvider } from '../contexts/AuthContext'
 
 
 function App() {
@@ -37,10 +37,11 @@ function App() {
    return (
     <>
 
-      
+      <AuthProvider>
         <RouterProvider router={router}>
           {router}
         </RouterProvider>
+        </AuthProvider>
       
     </>
   );
