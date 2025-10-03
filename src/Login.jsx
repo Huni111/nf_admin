@@ -13,6 +13,7 @@ const Login = ({ onLogin }) => {
   });
 
   const [registerInfo, setRegisterInfo] = useState({
+    name: "",
     email: "",
     password: ""
   });
@@ -32,10 +33,20 @@ const Login = ({ onLogin }) => {
     onLogin(userInfo.email, userInfo.password);
   };
 
-  const handleRegisterSubmit = (e) => { // Separate handler for register
+  const handleRegisterSubmit = async(e) => { // Separate handler for register
     e.preventDefault();
-    
+
+    try{
       signup( registerInfo.email, registerInfo.password, registerInfo.name, );
+      setRegisterInfo({
+        name: "",
+        email: "",
+        password: ""
+      })
+    }catch(error){
+      console.log(error.message)
+      throw error;
+    }
     
   };
 
