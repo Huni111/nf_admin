@@ -5,7 +5,7 @@ import { useAuth } from '../contexts/AuthContext';
 const Login = ({ onLogin }) => {
 
 
-   const { signup, login, currentUser, error, loading } = useAuth();
+   const { signup, login, logout, currentUser, error, loading } = useAuth();
 
   const [userInfo, setUserInfo] = useState({
     email: "",
@@ -28,10 +28,55 @@ const Login = ({ onLogin }) => {
     
   };
 
-   const handleLoginSubmit = (e) => { // Separate handler for login
-    e.preventDefault();
-    onLogin(userInfo.email, userInfo.password);
-  };
+   const handleLoginSubmit = async (e) => {
+  e.preventDefault();
+  
+  // Basic validation
+  if (!userInfo.email || !userInfo.password) {
+    alert('Please enter both email and password');
+    return;
+  }
+
+  try {
+  
+    await login(userInfo.email, userInfo.password);
+ 
+    
+    setUserInfo({ email: '', password: '' });
+    
+    console.log('Login successful!');
+  } catch (error) {
+  
+    if (error.code === 'auth/invalid-email') {
+      alert('Invalid email address');
+    } else if (error.code === 'auth/user-not-found') {
+      alert('No account found with this email');
+    } else if (error.code === 'auth/wrong-password') {
+      alert('Incorrect password');
+    } else if (error.code === 'auth/too-many-requests') {
+      alert('Too many failed attempts. Please try again later.');
+    } else {
+      alert(`Login failed: ${error.message}`);
+    }
+    
+    console.error('Login error:', error);
+  }
+};
+
+  const handleLogoutSubmit = async (e) => {
+  e.preventDefault();
+  
+  try {
+    await logout();
+    
+    console.log('Logout successful!');
+  
+  } catch (error) {
+
+    alert(`Logout failed: ${error.message}`);
+    console.error('Logout error:', error);
+  }
+};
 
   const handleRegisterSubmit = async(e) => { // Separate handler for register
     e.preventDefault();
@@ -80,6 +125,8 @@ const Login = ({ onLogin }) => {
 
       
     </div>
+            <button type="submit" className="login-button" onClick={handleLogoutSubmit}>Log Out</button>
+
 
     <div className="login-root">
       <form className="login-form" onSubmit={handleRegisterSubmit}>
