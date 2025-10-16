@@ -84,7 +84,7 @@ export const DataBaseProvider = ({ children }) => {
       const ordersQuery = query(
         collection(db, 'orders'),
         where('userId', '==', currentUser.uid),
-        // orderBy('createdAt', 'desc') 
+        orderBy('createdAt', 'desc') 
       );
 
       const querySnapshot = await getDocs(ordersQuery);
@@ -97,16 +97,16 @@ export const DataBaseProvider = ({ children }) => {
         });
       });
 
-      orders.sort((a, b) => {
-        const getTime = (order) => {
-          if (!order.createdAt) return 0;
-          if (order.createdAt.toDate) {
-            return order.createdAt.toDate().getTime();
-          }
-          return new Date(order.createdAt).getTime();
-        };
-        return getTime(b) - getTime(a);
-      });
+      // orders.sort((a, b) => {
+      //   const getTime = (order) => {
+      //     if (!order.createdAt) return 0;
+      //     if (order.createdAt.toDate) {
+      //       return order.createdAt.toDate().getTime();
+      //     }
+      //     return new Date(order.createdAt).getTime();
+      //   };
+      //   return getTime(b) - getTime(a);
+      // });
 
 
       setLoading(false);
