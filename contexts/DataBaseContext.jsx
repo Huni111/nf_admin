@@ -1,8 +1,7 @@
 import React, { createContext, useContext, useState } from 'react';
 import { useAuth } from './AuthContext';
 import { db } from '../firebase_config';
-import { doc, setDoc, serverTimestamp, collection, query, where, getDocs, orderBy } from 'firebase/firestore';
-
+import { doc, setDoc, updateDoc, serverTimestamp, getDoc, collection, query, where, getDocs, orderBy } from 'firebase/firestore';
 
 const DataBaseContext = createContext();
 
@@ -14,52 +13,154 @@ export const useDB = () => {
   return context;
 };
 
-
 export const DataBaseProvider = ({ children }) => {
   const { currentUser } = useAuth();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  
-  
-  // We'll add our database functions here later
-   const placeOrder = async (orderData) => {
-    console.log('Placing order for user:', currentUser?.email);
-    console.log('Order data:', orderData);
-    
+  // Add/Update user's cart
+  const addToCart = async (cartItems) => {
+    if (!currentUser) {
+      throw new Error('User must be logged in to add to cart');
+    }
+
     setLoading(true);
     setError(null);
 
     try {
-      // Use the orderId from Products component as the document ID
-      const orderDoc = {
-        // User information (from Products component)
-        userId: orderData.user.uid,
-        userEmail: orderData.user.email,
-        userDisplayName: orderData.user.displayName,
-        
-        // Order items (from Products component)
-        items: orderData.items,
-        
-        // Order summary (from Products component)
-        total: orderData.orderSummary.total,
-        
-        // Metadata
-        status: 'pending',
-        createdAt: serverTimestamp(),
-        
-        // Keep the timestamp from Products component too
-        clientTimestamp: orderData.timestamp
+      const userDocRef = doc(db, 'users', currentUser.uid);
+      
+      const cartData = {
+        items: cartItems,
+        updatedAt: serverTimestamp(),
+        total: cartItems.reduce((sum, item) => sum + (item.unitPrice * item.quantity), 0)
       };
 
-      // Use setDoc with the specific orderId as document ID
-      await setDoc(doc(db, 'orders', orderData.orderId), orderDoc);
+      // Check if user document exists
+      const userDoc = await getDoc(userDocRef);
       
+      if (userDoc.exists()) {
+        // Update existing user document
+        await updateDoc(userDocRef, {
+          cart: cartData,
+          lastUpdated: serverTimestamp()
+        });
+      } else {
+        // Create new user document with cart
+        await setDoc(userDocRef, {
+          email: currentUser.email,
+          displayName: currentUser.displayName || 'User',
+          cart: cartData,
+          createdAt: serverTimestamp()
+        });
+      }
+
+      setLoading(false);
+      return { 
+        success: true, 
+        message: 'Cart updated successfully!'
+      };
+      
+    } catch (error) {
+      console.error('Error updating cart:', error);
+      setError(error.message);
+      setLoading(false);
+      throw error;
+    }
+  };
+
+  // Get user's cart
+  const getCart = async () => {
+    if (!currentUser) {
+      throw new Error('User must be logged in to view cart');
+    }
+
+    setLoading(true);
+    setError(null);
+
+    try {
+      const userDocRef = doc(db, 'users', currentUser.uid);
+      const userDoc = await getDoc(userDocRef);
+      
+      if (userDoc.exists()) {
+        const userData = userDoc.data();
+        setLoading(false);
+        return userData.cart || { items: [], total: 0 };
+      } else {
+        setLoading(false);
+        return { items: [], total: 0 };
+      }
+      
+    } catch (error) {
+      console.error('Error fetching cart:', error);
+      setError(error.message);
+      setLoading(false);
+      throw error;
+    }
+  };
+
+  // Clear user's cart
+  const clearCart = async () => {
+    if (!currentUser) {
+      throw new Error('User must be logged in to clear cart');
+    }
+
+    setLoading(true);
+    setError(null);
+
+    try {
+      const userDocRef = doc(db, 'users', currentUser.uid);
+      await updateDoc(userDocRef, {
+        cart: { items: [], total: 0, updatedAt: serverTimestamp() }
+      });
+
+      setLoading(false);
+      return { 
+        success: true, 
+        message: 'Cart cleared successfully!'
+      };
+      
+    } catch (error) {
+      console.error('Error clearing cart:', error);
+      setError(error.message);
+      setLoading(false);
+      throw error;
+    }
+  };
+
+  // Place order from cart (creates separate order document)
+  const placeOrder = async (orderData) => {
+    if (!currentUser) {
+      throw new Error('User must be logged in to place order');
+    }
+
+    setLoading(true);
+    setError(null);
+
+    try {
+      // Create order in separate orders collection
+      const orderDoc = {
+        userId: currentUser.uid,
+        userEmail: currentUser.email,
+        userDisplayName: currentUser.displayName || 'User',
+        items: orderData.items,
+        total: orderData.total,
+        status: 'completed',
+        createdAt: serverTimestamp(),
+        orderId: orderData.orderId
+      };
+
+      // Save to orders collection
+      await setDoc(doc(db, 'orders', orderData.orderId), orderDoc);
+
+      // Clear the user's cart after successful order
+      await clearCart();
+
       setLoading(false);
       return { 
         success: true, 
         message: 'Order placed successfully!',
-        orderId: orderData.orderId // Return the same ID we used
+        orderId: orderData.orderId
       };
       
     } catch (error) {
@@ -70,7 +171,7 @@ export const DataBaseProvider = ({ children }) => {
     }
   };
 
-
+  // Get user's orders from orders collection
   const getUserOrders = async () => {
     if (!currentUser) {
       throw new Error('User must be logged in to view orders');
@@ -80,11 +181,10 @@ export const DataBaseProvider = ({ children }) => {
     setError(null);
 
     try {
-      // Query orders where userId matches current user's UID
       const ordersQuery = query(
         collection(db, 'orders'),
         where('userId', '==', currentUser.uid),
-        orderBy('createdAt', 'desc') 
+        orderBy('createdAt', 'desc')
       );
 
       const querySnapshot = await getDocs(ordersQuery);
@@ -97,18 +197,6 @@ export const DataBaseProvider = ({ children }) => {
         });
       });
 
-      // orders.sort((a, b) => {
-      //   const getTime = (order) => {
-      //     if (!order.createdAt) return 0;
-      //     if (order.createdAt.toDate) {
-      //       return order.createdAt.toDate().getTime();
-      //     }
-      //     return new Date(order.createdAt).getTime();
-      //   };
-      //   return getTime(b) - getTime(a);
-      // });
-
-
       setLoading(false);
       return orders;
       
@@ -120,15 +208,19 @@ export const DataBaseProvider = ({ children }) => {
     }
   };
 
-
-
-
-  // 4. Value that will be available to all components
   const value = {
+    // Cart functions (stored in user document)
+    addToCart,
+    getCart,
+    clearCart,
+    
+    // Order functions (stored in orders collection)
     placeOrder,
+    getUserOrders,
+    
+    // State
     loading,
     error,
-    getUserOrders,
     clearError: () => setError(null)
   };
 

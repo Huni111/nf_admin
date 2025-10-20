@@ -22,12 +22,12 @@ const Products = () => {
   ]);
 
   const [quantities, setQuantities] = useState({
-    1: 1,
-    2: 1
+    1: 0,
+    2: 0
   });
 
   const { currentUser } = useAuth();
-  const { placeOrder } = useDB();
+  const { addToCart } = useDB();
 
   const handleQuantityChange = (productId, change) => {
     setQuantities(prev => ({
@@ -36,68 +36,43 @@ const Products = () => {
     }));
   };
 
-  const calculateTotal = () => {
-    return products.reduce((total, product) => {
-      return total + (product.price * (quantities[product.id] || 0));
-    }, 0);
-  };
-
-  const handlePlaceOrder = async() => {
-    // Check if user is logged in
+  const handleAddToCart = async () => {
     if (!currentUser) {
-      alert("Please log in to place an order.");
+      alert("Please log in to add items to cart.");
       return;
     }
 
-    const total = calculateTotal();
-    
-    if (total === 0) {
-      alert("Please add at least one product to your order.");
-      return;
-    }
-
-    const orderDetails = {
-      // User Information from Firebase Auth
-      user: {
-        uid: currentUser.uid,
-        email: currentUser.email,
-        displayName: currentUser.displayName || 'User',
-      },
-      // Order Items (only include items with quantity > 0)
-      items: products.map(product => ({
+    // Filter out items with quantity 0
+    const cartItems = products
+      .map(product => ({
         productId: product.id,
         productName: product.name,
         quantity: quantities[product.id] || 0,
         unitPrice: product.price,
         subtotal: product.price * (quantities[product.id] || 0)
-      })).filter(item => item.quantity > 0),
-      // Order Summary - Only total now
-      orderSummary: {
-        total: total
-      },
-      // Metadata
-      timestamp: new Date().toISOString(),
-      orderId: `ORD-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-      status: 'pending'
-    };
+      }))
+      .filter(item => item.quantity > 0);
 
-    // Here you would typically send this data to your backend/Firestore
-    console.log('Order Details:', orderDetails);
+    if (cartItems.length === 0) {
+      alert("Please add at least one product to your cart.");
+      return;
+    }
 
     try {
-    // Use the context function to save to Firestore
-    const result = await placeOrder(orderDetails);
-    
-    alert(`Order placed successfully!\nOrder ID: ${result.orderId}\nTotal: $${orderDetails.orderSummary.total.toFixed(2)}`);
-    
-    // Reset quantities after order
-    setQuantities({ 1: 0, 2: 0 });
-  } catch (error) {
-    alert(`Error placing order: ${error.message}`);
-  }
+      await addToCart(cartItems);
+      alert("Items added to cart successfully!");
       
-    // Reset quantities after order
-    setQuantities({ 1: 0, 2: 0 });
+      // Reset quantities after adding to cart
+      setQuantities({ 1: 0, 2: 0 });
+    } catch (error) {
+      alert(`Error adding to cart: ${error.message}`);
+    }
+  };
+
+  const calculateTotal = () => {
+    return products.reduce((total, product) => {
+      return total + (product.price * (quantities[product.id] || 0));
+    }, 0);
   };
 
   const hasItemsInCart = calculateTotal() > 0;
@@ -177,22 +152,22 @@ const Products = () => {
         ))}
       </div>
 
-      {/* Single Order Summary and Button */}
+      {/* Cart Summary and Add to Cart Button */}
       <div className="order-summary">
-        <h3>Order Summary</h3>
+        <h3>Cart Summary</h3>
         <div className="order-total">
           Total: ${calculateTotal().toFixed(2)}
         </div>
         <button 
           className="place-order-btn"
-          onClick={handlePlaceOrder}
+          onClick={handleAddToCart}
           disabled={!hasItemsInCart}
           style={{
             opacity: hasItemsInCart ? 1 : 0.6,
             cursor: hasItemsInCart ? 'pointer' : 'not-allowed'
           }}
         >
-          Place Order
+          Add to Cart
         </button>
       </div>
     </div>

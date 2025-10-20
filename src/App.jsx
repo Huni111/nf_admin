@@ -7,6 +7,7 @@ import Root from './Root'
 import Login from './Login'
 import Orders from './Orders'
 import Products from './Products'
+import Cart from './Baschet'
 import { AuthProvider } from '../contexts/AuthContext'
 import { DataBaseProvider } from '../contexts/DataBaseContext'
 
@@ -28,6 +29,10 @@ function App() {
         {
           path: '/products',
           element: <Products />
+        },
+         {
+          path: '/cart',
+          element: <Cart />
         },
 
       ]
