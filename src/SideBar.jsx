@@ -10,10 +10,10 @@ const SideBar = () => {
     return (
    <>
     <nav className='navbar'>
-        <Link className='item' to="/">Bejelenkezes</Link> {" "}
-        <Link className='item' to="/products">Termekek</Link> {" "}
-        <Link className='item' to="/orders">Rendelesek</Link>
-        <Link className='item' to="/cart">Kosár</Link>
+        <Link className='item' to="/">Clienți</Link> {" "}
+        <Link className='item' to="/products">Comenzi</Link> {" "}
+        <Link className='item' to="/orders">Produse</Link>
+        <Link className='item' to="/cart">Galerie</Link>
       </nav>
    
    </>

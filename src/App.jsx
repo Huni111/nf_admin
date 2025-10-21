@@ -30,8 +30,12 @@ function App() {
           path: '/products',
           element: <Products />
         },
-         {
+        {
           path: '/cart',
+          element: <Cart />
+        },
+        {
+          path: '/admin',
           element: <Cart />
         },
 
