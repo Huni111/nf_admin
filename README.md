@@ -1,4 +1,4 @@
-– B2B Webshop Admin Panel
+## B2B Webshop Admin Panel
 📖 Overview
 
 This is the Admin Dashboard for the B2B Webshop project.
