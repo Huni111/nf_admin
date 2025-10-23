@@ -3,7 +3,7 @@ import '../styles/ProductCard.css';
 import { useAuth } from '../contexts/AuthContext';
 import { useDB } from '../contexts/DataBaseContext';
 
-const Cart = () => {
+const Galerie = () => {
   const [cart, setCart] = useState({ items: [], total: 0 });
   const { currentUser } = useAuth();
   const { getCart, placeOrder, clearCart, loading } = useDB();
@@ -132,4 +132,4 @@ const Cart = () => {
   );
 };
 
-export default Cart;
+export default Galerie;

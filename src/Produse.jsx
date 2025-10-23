@@ -3,7 +3,7 @@ import { useDB } from '../contexts/DataBaseContext';
 import { useAuth } from '../contexts/AuthContext';
 import '../styles/Order.css';
 
-const Orders = () => {
+const Produse = () => {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const { getUserOrders, error } = useDB();
@@ -17,7 +17,7 @@ const Orders = () => {
       }
 
       try {
-        const userOrders = await getUserOrders();
+        const user = await getUserOrders();
         setOrders(userOrders);
       } catch (err) {
         console.error('Error fetching orders:', err);
@@ -124,4 +124,4 @@ const Orders = () => {
   );
 };
 
-export default Orders;
+export default Produse;

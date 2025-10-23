@@ -4,10 +4,10 @@ import viteLogo from '/vite.svg'
 import './App.css'
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 import Root from './Root'
-import Login from './Login'
-import Orders from './Orders'
-import Products from './Products'
-import Cart from './Baschet'
+import Clienti from './Login'
+import Produse from './Orders'
+import Comenzi from './Products'
+import Galerie from './Baschet'
 import { AuthProvider } from '../contexts/AuthContext'
 import { DataBaseProvider } from '../contexts/DataBaseContext'
 
@@ -20,23 +20,23 @@ function App() {
       children: [
         {
           path: '/',
-          element: <Login />
+          element: <Clienti />
         },
         {
           path: '/orders',
-          element: <Orders />
+          element: <Produse />
         },
         {
           path: '/products',
-          element: <Products />
+          element: <Comenzi />
         },
         {
           path: '/cart',
-          element: <Cart />
+          element: <Galerie />
         },
         {
           path: '/admin',
-          element: <Cart />
+          element: <Galerie />
         },
 
       ]

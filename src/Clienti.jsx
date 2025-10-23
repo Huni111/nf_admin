@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import '../styles/Login.css';
 import { useAuth } from '../contexts/AuthContext';
 
-const Login = ({ onLogin }) => {
+const Clienti = ({ onLogin }) => {
 
 
    const { signup, login, logout, currentUser, error, loading } = useAuth();
@@ -168,4 +168,4 @@ const Login = ({ onLogin }) => {
   );
 };
 
-export default Login;
+export default Clienti;

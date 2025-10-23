@@ -3,7 +3,7 @@ import '../styles/ProductCard.css';
 import { useAuth } from '../contexts/AuthContext'
 import { useDB } from '../contexts/DataBaseContext';
 
-const Products = () => {
+const Comenzi = () => {
   const [products] = useState([
     {
       id: 1,
@@ -174,4 +174,4 @@ const Products = () => {
   );
 };
 
-export default Products;
+export default Comenzi;
