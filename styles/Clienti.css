@@ -1,0 +1,115 @@
+/* Clienti.css */
+
+.clienti-container {
+  min-height: 100vh;
+  background-color: #f8f9fa;
+}
+
+.clienti-tabs {
+  display: flex;
+  background: white;
+  border-bottom: 2px solid #e9ecef;
+  padding: 0 2rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.tab-button {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1.25rem 2rem;
+  background: none;
+  border: none;
+  border-bottom: 3px solid transparent;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #6c757d;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+.tab-button:hover {
+  color: #3498db;
+  background-color: #f8f9fa;
+}
+
+.tab-button.active {
+  color: #3498db;
+  border-bottom-color: #3498db;
+  background-color: #f8f9fa;
+}
+
+.tab-icon {
+  font-size: 1.2rem;
+}
+
+.tab-button.active .tab-icon {
+  animation: bounce 0.5s ease;
+}
+
+.clienti-content {
+  padding: 0;
+}
+
+.tab-panel {
+  animation: fadeIn 0.3s ease;
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes bounce {
+  0%, 20%, 60%, 100% {
+    transform: translateY(0);
+  }
+  40% {
+    transform: translateY(-5px);
+  }
+  80% {
+    transform: translateY(-2px);
+  }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .clienti-tabs {
+    padding: 0 1rem;
+    flex-direction: column;
+  }
+
+  .tab-button {
+    padding: 1rem 1.5rem;
+    justify-content: center;
+    border-bottom: 1px solid #e9ecef;
+    border-right: none;
+  }
+
+  .tab-button.active {
+    border-bottom: 3px solid #3498db;
+  }
+}
+
+@media (max-width: 480px) {
+  .clienti-tabs {
+    padding: 0 0.5rem;
+  }
+
+  .tab-button {
+    padding: 0.875rem 1rem;
+    font-size: 0.9rem;
+  }
+
+  .tab-icon {
+    font-size: 1rem;
+  }
+}

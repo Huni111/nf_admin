@@ -72,6 +72,15 @@ const ClientsList = () => {
     return date.toLocaleDateString('ro-RO');
   };
 
+  // Prevent row click when clicking on buttons/links
+  const handleRowClick = (client, e) => {
+    // Don't open modal if user clicked on a button or link
+    if (e.target.tagName === 'BUTTON' || e.target.tagName === 'A' || e.target.closest('button') || e.target.closest('a')) {
+      return;
+    }
+    handleClientClick(client);
+  };
+
   if (loading) {
     return (
       <div className="clients-container">
@@ -135,7 +144,11 @@ const ClientsList = () => {
             </thead>
             <tbody>
               {filteredClients.map((client) => (
-                <tr key={client.id} className="client-row">
+                <tr 
+                  key={client.id} 
+                  className="client-row"
+                  onClick={(e) => handleRowClick(client, e)}
+                >
                   <td>
                     <div className="company-info">
                       <strong>{client.companyName || 'N/A'}</strong>
@@ -151,12 +164,12 @@ const ClientsList = () => {
                     </div>
                   </td>
                   <td>
-                    <a href={`mailto:${client.email}`} className="email-link">
+                    <a href={`mailto:${client.email}`} className="email-link" onClick={(e) => e.stopPropagation()}>
                       {client.email}
                     </a>
                   </td>
                   <td>
-                    <a href={`tel:${client.phoneNumber}`} className="phone-link">
+                    <a href={`tel:${client.phoneNumber}`} className="phone-link" onClick={(e) => e.stopPropagation()}>
                       {client.phoneNumber}
                     </a>
                   </td>
@@ -176,7 +189,10 @@ const ClientsList = () => {
                   <td>{formatDate(client.createdAt)}</td>
                   <td>
                     <button
-                      onClick={() => handleClientClick(client)}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleClientClick(client);
+                      }}
                       className="details-button"
                     >
                       Detalii
@@ -194,7 +210,7 @@ const ClientsList = () => {
         <div className="modal-overlay" onClick={handleCloseModal}>
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
-              <h2>Detalii Client</h2>
+              <h2>Detalii Client - {selectedClient.companyName || selectedClient.contactName}</h2>
               <button className="close-button" onClick={handleCloseModal}>
                 ×
               </button>
