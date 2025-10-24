@@ -1,5 +1,4 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-
 import { 
   createUserWithEmailAndPassword,  
   signInWithEmailAndPassword,      
@@ -7,7 +6,6 @@ import {
   onAuthStateChanged,            
   updateProfile               
 } from 'firebase/auth';
-
 import { doc, setDoc } from 'firebase/firestore';
 import { auth, db } from '../firebase_config';
 
@@ -15,118 +13,184 @@ const AuthContext = createContext();
 
 export const useAuth = () => {
   const context = useContext(AuthContext);
-  
-  // Safety check: make sure the hook is used inside the AuthProvider
   if (!context) {
     throw new Error('useAuth must be used within an AuthProvider');
   }
-  
   return context;
 };
 
 export const AuthProvider = ({ children }) => {
+  const [currentUser, setCurrentUser] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-     const [currentUser, setCurrentUser] = useState(null);
-     const [loading, setLoading] = useState(true);
-     const [error, setError] = useState(null);
-
-     
-     
-     const signup = async (email, password, displayName = '') => {
+  // Updated signup function to handle your form data
+  const signup = async (formData) => {
     try {
-      setError(null); // Clear any previous errors
-        console.log(email)
-        console.log(password)
-        console.log(displayName)
+      setError(null);
+      
+      const { 
+        email, 
+        password, 
+        contactName, 
+        isAdmin,
+        companyName,
+        cui,
+        registrationNumber,
+        socialAddress,
+        deliveryAddress,
+        contactPosition,
+        phoneNumber,
+        iban,
+        bank,
+        vatPayer,
+        collaborationType,
+        otherCollaborationDetails,
+        preferredChannel,
+        preferredLanguage,
+        permissions
+      } = formData;
+
+      console.log('Creating user with email:', email);
+      console.log('User type:', isAdmin ? 'Admin' : 'Company');
+
       // Create the user account with Firebase
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-        const user = userCredential.user;
-    
-      // If a display name was provided, update the user's profile
-      if (displayName) {
-        await updateProfile(user, { displayName });
+      const user = userCredential.user;
+
+      // Update user profile with contact name
+      if (contactName) {
+        await updateProfile(user, { 
+          displayName: contactName 
+        });
       }
 
+      // Prepare user data for Firestore
+      const userData = {
+        uid: user.uid,
+        email: user.email,
+        displayName: contactName,
+        userType: isAdmin ? 'admin' : 'company',
+        createdAt: new Date(),
+        // Common fields for both admin and company
+        contactName,
+        phoneNumber,
+        // Company-specific fields (only for company users)
+        ...(!isAdmin && {
+          companyName,
+          cui,
+          registrationNumber,
+          socialAddress,
+          deliveryAddress,
+          contactPosition,
+          iban,
+          bank,
+          vatPayer,
+          collaborationType,
+          otherCollaborationDetails,
+          preferredChannel,
+          preferredLanguage
+        }),
+        // Admin-specific fields (only for admin users)
+        ...(isAdmin && {
+          permissions: permissions || {
+            canView: true,
+            canEdit: false,
+            canDelete: false,
+            canManageUsers: false
+          }
+        })
+      };
 
-      await setDoc(doc(db, 'users', user.uid), {
-      uid: user.uid,
-      email: user.email,
-      displayName: displayName, // Use the provided display name
-      createdAt: new Date(), // Track when the user was created
-      // You can add any other user-related fields here in the future
-    });
-      
-      // Return the user object
-      return userCredential.user;
-      
+      // Save to Firestore
+      await setDoc(doc(db, 'users', user.uid), userData);
+
+      console.log('User created successfully:', user.uid);
+      return user;
+
     } catch (err) {
-      setError(err.message); // Store the error
-      throw err; // Re-throw so the component can handle it too
+      console.error('Signup error:', err);
+      setError(err.message);
+      throw err;
     }
   };
-
 
   const login = async (email, password) => {
     try {
-      setError(null); // Clear any previous errors
-      
-      // Sign in with Firebase
+      setError(null);
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
-      
-      // Return the user object
       return userCredential.user;
-      
     } catch (err) {
-      setError(err.message); // Store the error
-      throw err; // Re-throw so the component can handle it too
+      setError(err.message);
+      throw err;
     }
   };
 
-
-
-   const logout = async () => {
+  const logout = async () => {
     try {
-      setError(null); // Clear any previous errors
-      
-      // Sign out from Firebase
+      setError(null);
       await signOut(auth);
-      
     } catch (err) {
-      setError(err.message); // Store the error
-      throw err; // Re-throw so the component can handle it too
+      setError(err.message);
+      throw err;
+    }
+  };
+
+  // Function to update user profile with additional data
+  const updateUserProfile = async (additionalData) => {
+    try {
+      setError(null);
+      const user = auth.currentUser;
+      
+      if (user) {
+        // Update Firestore document
+        await setDoc(doc(db, 'users', user.uid), additionalData, { merge: true });
+        return true;
+      }
+      throw new Error('No user logged in');
+    } catch (err) {
+      setError(err.message);
+      throw err;
+    }
+  };
+
+  // Function to get user data from Firestore
+  const getUserData = async (uid) => {
+    try {
+      const userDoc = await getDoc(doc(db, 'users', uid));
+      if (userDoc.exists()) {
+        return userDoc.data();
+      }
+      return null;
+    } catch (err) {
+      setError(err.message);
+      throw err;
     }
   };
 
   useEffect(() => {
-    
-    // onAuthStateChanged returns an "unsubscribe" function
-    // This listener fires whenever the user logs in, logs out, or the page loads
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      setCurrentUser(user); // Update currentUser (null if logged out, user object if logged in)
-      setLoading(false);    // We're done checking, so set loading to false
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
+      setCurrentUser(user);
+      setLoading(false);
     });
 
-    // Cleanup function: unsubscribe when component unmounts
-    // This prevents memory leaks
     return unsubscribe;
-    
-  }, []); 
-
+  }, []);
 
   const value = {
     currentUser,  
     signup,       
     login,       
     logout,       
+    updateUserProfile,
+    getUserData,
     error,       
     loading,     
   };
-
-
 
   return (
     <AuthContext.Provider value={value}>
       {!loading && children}
     </AuthContext.Provider>
   );
-}
+};

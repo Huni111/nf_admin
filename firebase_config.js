@@ -7,13 +7,13 @@ import { getFirestore } from "firebase/firestore";
 
 
 const firebaseConfig = {
-  apiKey: "AIzaSyDkcSxsI8I90CnH-KoecXWZJCUV6mT5g3k",
-  authDomain: "dbtest-fce24.firebaseapp.com",
-  projectId: "dbtest-fce24",
-  storageBucket: "dbtest-fce24.firebasestorage.app",
-  messagingSenderId: "103674634303",
-  appId: "1:103674634303:web:c92a8ea39a436d5f49988a",
-  measurementId: "G-XZ35RZ4LD3"
+  apiKey: "AIzaSyDIm9JGFJjjPJbBJwJwooAFUL4hE8JROdI",
+  authDomain: "norbertosite.firebaseapp.com",
+  projectId: "norbertosite",
+  storageBucket: "norbertosite.firebasestorage.app",
+  messagingSenderId: "407675683935",
+  appId: "1:407675683935:web:522d16efb7f5b7a43787ea",
+  measurementId: "G-W30BCJKG77"
 };
 
 
